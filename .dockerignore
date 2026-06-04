@@ -1,0 +1,5 @@
+.git
+target
+ontologies
+*.md
+!doc/docker/README.md
