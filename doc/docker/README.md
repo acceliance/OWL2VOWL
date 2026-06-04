@@ -2,23 +2,15 @@
 
 ## Full stack (WebVOWL + converter)
 
-OWL2VOWL is built **into** the WebVOWL image. Clone both repositories as **siblings** and run from **WebVOWL**:
-
-```text
-workspace/
-  WebVOWL/
-  OWL2VOWL/    ← this repo
-```
+OWL2VOWL is built **into** the WebVOWL image. Clone **WebVOWL** only; the Dockerfile clones this repo from GitHub during `docker build`:
 
 ```bash
-cd ../WebVOWL
-docker compose build
-docker compose up -d
+git clone https://github.com/VisualDataWeb/WebVOWL.git
+cd WebVOWL
+docker compose build && docker compose up -d
 ```
 
-Documentation and ADR: `WebVOWL/docker/README.md`, `WebVOWL/docs/adr/0001-docker-local-development.md`.
-
-Compose references this repo via `additional_contexts.owl2vowl: ../OWL2VOWL`.
+See `WebVOWL/docker/README.md` (build args `OWL2VOWL_GIT_REF`, `OWL2VOWL_GIT_URL`).
 
 ## Standalone converter image (this repo)
 
@@ -41,4 +33,4 @@ Uses `OWL2VOWL/Dockerfile` (`maven:3.9.16-eclipse-temurin-8-noble` → `eclipse-
 
 ## Build context
 
-`.dockerignore` excludes `ontologies/` (large sample files) from Docker context when this directory is used as an additional context from WebVOWL.
+`.dockerignore` excludes `ontologies/` from the standalone image build context.
