@@ -9,20 +9,34 @@ public class Annotation {
 	public static final String TYPE_IRI = "iri";
 	public static final String TYPE_LABEL = "label";
 	private String identifier;
+	private String fullIri;
 	private String language = Vowl_Lang.LANG_UNSET;
 	private String value;
 	private String type;
 
 	public Annotation(String identifier, String value) {
+		this.fullIri = stripAngleBrackets(identifier);
 		this.identifier = extractIdentifier(identifier);
 		this.value = value;
 		this.type = "unset";
 	}
 
 	public Annotation(String identifier, String value, String type) {
+		this.fullIri = stripAngleBrackets(identifier);
 		this.identifier = extractIdentifier(identifier);
 		this.value = value;
 		this.type = type;
+	}
+
+	private String stripAngleBrackets(String iri) {
+		if (iri != null && iri.startsWith("<") && iri.endsWith(">")) {
+			return iri.substring(1, iri.length() - 1);
+		}
+		return iri;
+	}
+
+	public String getFullIri() {
+		return fullIri;
 	}
 
 	public String getType() {

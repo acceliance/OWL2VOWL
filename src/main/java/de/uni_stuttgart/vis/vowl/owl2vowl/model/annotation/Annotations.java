@@ -37,13 +37,13 @@ public class Annotations {
 	}
 
 	public void addAnnotation(Annotation annotation) {
-		String identifier = annotation.getIdentifier();
+		String key = annotation.getFullIri() != null ? annotation.getFullIri() : annotation.getIdentifier();
 
-		if (!identifierToAnnotation.containsKey(identifier)) {
-			identifierToAnnotation.put(identifier, new ArrayList<>());
+		if (!identifierToAnnotation.containsKey(key)) {
+			identifierToAnnotation.put(key, new ArrayList<>());
 		}
 
-		identifierToAnnotation.get(identifier).add(annotation);
+		identifierToAnnotation.get(key).add(annotation);
 	}
 
 	public void fillAnnotations(Set<Annotation> annotations) {
@@ -68,11 +68,13 @@ public class Annotations {
 				continue;
 			}
 
-			if (!identifierToAnnotation.containsKey(annotation.getIdentifier())) {
-				identifierToAnnotation.put(annotation.getIdentifier(), new ArrayList<>());
+			String key = annotation.getFullIri() != null ? annotation.getFullIri() : annotation.getIdentifier();
+
+			if (!identifierToAnnotation.containsKey(key)) {
+				identifierToAnnotation.put(key, new ArrayList<>());
 			}
 
-			identifierToAnnotation.get(annotation.getIdentifier()).add(annotation);
+			identifierToAnnotation.get(key).add(annotation);
 		}
 	}
 

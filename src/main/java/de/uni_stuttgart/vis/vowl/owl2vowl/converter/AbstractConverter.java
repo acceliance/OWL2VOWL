@@ -4,6 +4,7 @@ import de.uni_stuttgart.vis.vowl.owl2vowl.export.types.Exporter;
 import de.uni_stuttgart.vis.vowl.owl2vowl.export.types.JsonGenerator;
 import de.uni_stuttgart.vis.vowl.owl2vowl.model.data.VowlData;
 import de.uni_stuttgart.vis.vowl.owl2vowl.model.entities.AbstractEntity;
+import de.uni_stuttgart.vis.vowl.owl2vowl.model.entities.properties.VowlObjectProperty;
 import de.uni_stuttgart.vis.vowl.owl2vowl.parser.owlapi.EntityCreationVisitor;
 import de.uni_stuttgart.vis.vowl.owl2vowl.parser.owlapi.IndividualsVisitor;
 import de.uni_stuttgart.vis.vowl.owl2vowl.parser.vowl.AnnotationParser;
@@ -23,6 +24,7 @@ import de.uni_stuttgart.vis.vowl.owl2vowl.parser.vowl.property.VowlSubclassPrope
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
@@ -33,9 +35,12 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassAxiom;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDataPropertyAxiom;
+import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAxiom;
+import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -229,8 +234,29 @@ public abstract class AbstractConverter implements Converter {
 		processObjectProperties(ontology, vowlData);
 		processDataProperties(ontology, vowlData);
 		processIndividuals(ontology, vowlData, manager);
+		processObjectPropertyAssertions(ontology, vowlData);
 
 		processGenericAxioms();
+	}
+
+	private void processObjectPropertyAssertions(OWLOntology ontology, VowlData vowlData) {
+		ontology.axioms(AxiomType.OBJECT_PROPERTY_ASSERTION, Imports.INCLUDED).forEach(axiom -> {
+			try {
+				OWLObjectPropertyExpression pe = axiom.getProperty();
+				if (pe.isAnonymous()) return;
+				VowlObjectProperty prop = vowlData.getObjectPropertyForIri(pe.asOWLObjectProperty().getIRI());
+				if (prop == null) return;
+				OWLIndividual subject = axiom.getSubject();
+				OWLIndividual object = axiom.getObject();
+				if (subject.isAnonymous() || object.isAnonymous()) return;
+				prop.addIndividualAssertion(
+					subject.asOWLNamedIndividual().getIRI(),
+					object.asOWLNamedIndividual().getIRI()
+				);
+			} catch (Exception e) {
+				logger.info("processObjectPropertyAssertions: Failed -> Skipping");
+			}
+		});
 	}
 
 	private void processIndividuals(OWLOntology ontology, VowlData vowlData, OWLOntologyManager manager) {

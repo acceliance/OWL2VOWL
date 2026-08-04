@@ -222,6 +222,8 @@ public class JsonGeneratorVisitorImpl implements JsonGeneratorVisitor {
 		attributes.put("minCardinality", getCardinality(property.getMinCardinality()));
 		attributes.put("maxCardinality", getCardinality(property.getMaxCardinality()));
 		attributes.put("cardinality", getCardinality(property.getExactCardinality()));
+		attributes.put("instances", property.getIndividualAssertions().size());
+		attributes.put("individuals", createPropertyIndividualsJson(property.getIndividualAssertions()));
 		propertyList.add(object);
 		propertyAttributeList.add(attributes);
 	}
@@ -256,9 +258,22 @@ public class JsonGeneratorVisitorImpl implements JsonGeneratorVisitor {
 		attributes.put("minCardinality", getCardinality(property.getMinCardinality()));
 		attributes.put("maxCardinality", getCardinality(property.getMaxCardinality()));
 		attributes.put("cardinality", getCardinality(property.getExactCardinality()));
+		attributes.put("instances", reference.getIndividualAssertions().size());
+		attributes.put("individuals", createPropertyIndividualsJson(reference.getIndividualAssertions()));
 
 		propertyList.add(object);
 		propertyAttributeList.add(attributes);
+	}
+
+	private List<Object> createPropertyIndividualsJson(List<IRI[]> assertions) {
+		List<Object> list = new ArrayList<>();
+		for (IRI[] pair : assertions) {
+			Map<String, Object> entry = new HashMap<>();
+			entry.put("subject", pair[0].toString());
+			entry.put("object", pair[1].toString());
+			list.add(entry);
+		}
+		return list;
 	}
 
 	@Override

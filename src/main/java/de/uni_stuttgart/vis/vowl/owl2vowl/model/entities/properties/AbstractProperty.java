@@ -10,6 +10,9 @@ import de.uni_stuttgart.vis.vowl.owl2vowl.model.entities.AbstractEntity;
 import de.uni_stuttgart.vis.vowl.owl2vowl.model.visitor.VowlPropertyVisitor;
 import org.semanticweb.owlapi.model.IRI;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -19,6 +22,7 @@ public abstract class AbstractProperty extends AbstractEntity implements HasInve
 	private Set<IRI> domains = new SetWithoutNull<>();
 	private Set<IRI> ranges = new SetWithoutNull<>();
 	private Set<IRI> referencedIris = new SetWithoutNull<>();
+	private List<IRI[]> individualAssertions = new ArrayList<>();
 
 	// Merged entities used only for json generation!
 	private IRI mergedDomain;
@@ -113,17 +117,25 @@ public abstract class AbstractProperty extends AbstractEntity implements HasInve
 	}
 
 	
+	public void addIndividualAssertion(IRI subject, IRI object) {
+		individualAssertions.add(new IRI[]{subject, object});
+	}
+
+	public List<IRI[]> getIndividualAssertions() {
+		return Collections.unmodifiableList(individualAssertions);
+	}
+
 	@Override
 	public void releaseMemory() {
 		if (domains!=null) domains.clear();
 		if (ranges!=null) ranges.clear();
 		if (referencedIris!=null) referencedIris.clear();
-		
-		
-		domains 		= null;
-		ranges			= null;
-		referencedIris	= null;
-		
+		if (individualAssertions!=null) individualAssertions.clear();
+
+		domains 			= null;
+		ranges				= null;
+		referencedIris		= null;
+		individualAssertions= null;
 	}
 	
 	public abstract void accept(VowlPropertyVisitor visitor);
