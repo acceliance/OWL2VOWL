@@ -1,9 +1,20 @@
-[![Build Status](https://travis-ci.org/VisualDataWeb/OWL2VOWL.svg)](https://travis-ci.org/VisualDataWeb/OWL2VOWL)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.visualdataweb.vowl.owl2vowl/OWL2VOWL/badge.svg)](https://mvnrepository.com/artifact/org.visualdataweb.vowl.owl2vowl/OWL2VOWL)
-[![](https://jitpack.io/v/VisualDataWeb/OWL2VOWL.svg)](https://jitpack.io/#VisualDataWeb/OWL2VOWL)
-
-OWL2VOWL converter 
+OWL2VOWL converter
 ==================
+
+[![Docker CI](https://github.com/acceliance/OWL2VOWL/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/acceliance/OWL2VOWL/actions/workflows/docker-ci.yml)
+[![Docker Release](https://github.com/acceliance/OWL2VOWL/actions/workflows/docker-release.yml/badge.svg)](https://github.com/acceliance/OWL2VOWL/actions/workflows/docker-release.yml)
+[![Version](https://img.shields.io/badge/version-0.3.7-blue)](pom.xml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
+[![Java](https://img.shields.io/badge/java-8%2B-orange)](https://adoptium.net/)
+[![Maven Central](https://img.shields.io/maven-central/v/org.visualdataweb.vowl.owl2vowl/OWL2VOWL?label=maven%20central)](https://mvnrepository.com/artifact/org.visualdataweb.vowl.owl2vowl/OWL2VOWL)
+[![JitPack](https://jitpack.io/v/VisualDataWeb/OWL2VOWL.svg)](https://jitpack.io/#VisualDataWeb/OWL2VOWL)
+[![Fork of](https://img.shields.io/badge/fork%20of-VisualDataWeb%2FOWL2VOWL-lightgrey)](https://github.com/VisualDataWeb/OWL2VOWL)
+[![Maintained by Acceliance](https://img.shields.io/badge/maintained%20by-Acceliance-0072C6)](https://github.com/acceliance)
+
+This is the [Acceliance](https://www.acceliance.fr/) fork of OWL2VOWL, the converter behind
+[WebVOWL](https://github.com/acceliance/WebVOWL). See [Acceliance contributions](#acceliance-contributions)
+for what differs from upstream. The Maven Central and JitPack badges above refer to the **upstream** artifact —
+this fork is not published to either.
 
 Dev Dependency
 --------------
@@ -87,6 +98,38 @@ To run a Spring Server directly from the IDE you have to start the `ServerMain.j
 
 - **With WebVOWL (recommended):** clone both repos as siblings; build and run from the WebVOWL directory — see `WebVOWL/docker/README.md`.
 - **Standalone converter:** see [doc/docker/README.md](doc/docker/README.md) (`docker build -t owl2vowl:local .`).
+
+
+Acceliance contributions
+------------------------
+
+[Acceliance](https://www.acceliance.fr/) maintains this fork and contributes the following changes on top of
+upstream `VisualDataWeb/OWL2VOWL` (commit `e6cde17`, *ui improvements*). They are the converter-side counterpart
+of the sidebar and annotation work in the [WebVOWL fork](https://github.com/acceliance/WebVOWL) — the frontend
+reads the extra JSON fields produced here.
+
+### Object property assertions are exported
+
+`AbstractConverter` gains `processObjectPropertyAssertions()`, which walks every `OBJECT_PROPERTY_ASSERTION`
+axiom of the ontology and its imports and attaches the subject/object pair to the corresponding property
+(anonymous properties and individuals are skipped). Assertions are stored on `AbstractProperty` through
+`addIndividualAssertion()` / `getIndividualAssertions()` and released in `releaseMemory()`.
+
+The JSON export then emits two new per-property attributes in `JsonGeneratorVisitorImpl`:
+
+*   `instances` — the number of asserted individual pairs for the property
+*   `individuals` — the pairs themselves, as `{"subject": "<IRI>", "object": "<IRI>"}` entries
+
+Both are emitted for plain and for referenced/merged properties. WebVOWL renders the count under the property
+label in the graph and lists the assertions in the sidebar.
+
+### Annotations are keyed by full IRI
+
+`Annotation` now retains the full annotation-property IRI (`getFullIri()`, with surrounding angle brackets
+stripped) alongside the short identifier, and `Annotations` maps by that full IRI instead of the short form.
+Previously two annotation properties from different namespaces that shared a local name — for example
+`dc:description` and `dcterms:description` — collapsed into a single bucket and lost values. Keying by IRI keeps
+them distinct, which is what lets the WebVOWL sidebar list every annotation separately.
 
 
 FAQ
